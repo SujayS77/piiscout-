@@ -20,6 +20,8 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
+# preshed is capped: version 3.0.14 makes spaCy fail to load its models (OverflowError).
+ner = ["spacy>=3.7,<3.9", "preshed<3.0.11"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

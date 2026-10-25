@@ -25,14 +25,35 @@ DETECTORS: list[tuple[str, Callable[[str], Iterator[Finding]]]] = [
 ]
 
 
-def scan_text(text: str, types: Optional[Iterable[str]] = None) -> list[Finding]:
+METHODS = ("rule", "ner", "hybrid")
+
+
+def _detectors_for(method: str) -> list[tuple[str, Callable[[str], Iterator[Finding]]]]:
+    if method not in METHODS:
+        raise ValueError(f"method must be one of {METHODS}, got {method!r}")
+    if method == "rule":
+        return DETECTORS
+    from .ner import detect_names  # imported lazily: spaCy is optional
+
+    if method == "ner":
+        return [("NAME", detect_names)]
+    # hybrid: rules first, names last, so a strict rule match wins any overlap.
+    return DETECTORS + [("NAME", detect_names)]
+
+
+def scan_text(
+    text: str,
+    types: Optional[Iterable[str]] = None,
+    method: str = "rule",
+) -> list[Finding]:
     """Return non-overlapping findings in `text`, sorted by position.
 
     `types` optionally restricts the scan, e.g. ["AADHAAR", "PAN"].
+    `method` is "rule" (default), "ner" (names only) or "hybrid" (both).
     """
     wanted = {t.upper() for t in types} if types else None
     candidates: list[tuple[int, Finding]] = []
-    for priority, (name, detector) in enumerate(DETECTORS):
+    for priority, (name, detector) in enumerate(_detectors_for(method)):
         if wanted is not None and name not in wanted:
             continue
         for finding in detector(text):
