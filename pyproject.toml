@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "piiscout"
-version = "0.1.0"
+version = "0.3.0"
 description = "Open source tool to detect and redact personal data (Aadhaar, PAN, phone, email, UPI) in datasets."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -22,6 +22,9 @@ dependencies = []
 dev = ["pytest>=7"]
 # preshed is capped: version 3.0.14 makes spaCy fail to load its models (OverflowError).
 ner = ["spacy>=3.7,<3.9", "preshed<3.0.11"]
+
+[project.scripts]
+piiscout = "piiscout.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
